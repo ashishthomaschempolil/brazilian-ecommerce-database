@@ -9,25 +9,28 @@ services:
     volumes:
       - ./database/data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${SQL_DB}
-      POSTGRES_USER: ${SQL_USER}
-      POSTGRES_PASSWORD: ${SQL_PASSWORD}
-      POSTGRES_HOST: ${SQL_HOST}
-      POSTGRES_PORT: ${SQL_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   python:
     build: .
     container_name: python
-    ports:
-      - "8000:8000"
     volumes:
       - .:/app
     environment:
-      POSTGRES_DB: ${SQL_DB}
-      POSTGRES_USER: ${SQL_USER}
-      POSTGRES_PASSWORD: ${SQL_PASSWORD}
-      POSTGRES_HOST: ${SQL_HOST}
-      POSTGRES_PORT: ${SQL_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     depends_on:
       - db
+    restart: always
 
     

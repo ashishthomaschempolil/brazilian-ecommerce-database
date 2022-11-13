@@ -1,18 +1,12 @@
 import psycopg2
 import os
-import utils.alter_tables as alter_tables
-import utils.create_tables as create_tables
+import database.utils.alter_tables as alter_tables
+import database.utils.create_tables as create_tables
 
 
-DB = os.environ.get("SQL_DB")
-USER = os.environ.get("SQL_USER")
-PASSWORD = os.environ.get("SQL_PASSWORD")
-PORT = os.environ.get("SQL_PORT")
-HOST = os.environ.get("SQL_HOST")
 
-conn_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}"
 
-def connect_to_db(conn_url: str = conn_url) -> psycopg2.extensions.connection:
+def connect_to_db(conn_url: str) -> psycopg2.extensions.connection:
     """Connect to the POSGRESQL database and return the connection object
 
     :param str conn_url: the connection url to the database, defaults to conn_url
@@ -23,7 +17,7 @@ def connect_to_db(conn_url: str = conn_url) -> psycopg2.extensions.connection:
     return conn
 
 
-def create_db(conn: psycopg2.extensions.connection, db: str = DB) -> None:
+def create_db(conn: psycopg2.extensions.connection, db: str) -> None:
     """Create a database
 
     :param psycopg2.extensions.connection conn: the connection object
@@ -68,18 +62,28 @@ def alter_tables(conn: psycopg2.extensions.connection) -> None:
                 print(f"Table {table_name} already exists")
 
 
-def main(conn_url: str = conn_url, db: str = DB) -> None:
+def main(conn_url: str, db: str) -> None:
     """Main function to create the database and tables
 
     :param str conn_url: the connection url to the database, defaults to conn_url
     :param str db: the name of the database to create, defaults to DB
     :return None:
     """
-    conn = connect_to_db(conn_url)
-    create_db(conn, db)
+    # print("Creating database")
+    # conn = connect_to_db(conn_url)
+    # create_db(conn, db)
+    # print("Database created")
     conn = connect_to_db(conn_url + f"/{db}")
     create_tables(conn)
     alter_tables(conn)
 
 if __name__ == "__main__":
-    main()
+  DB = os.environ.get("POSTGRES_DB")
+  USER = os.environ.get("POSTGRES_USER")
+  PASSWORD = os.environ.get("POSTGRES_PASSWORD")
+  PORT = os.environ.get("POSTGRES_PORT")
+  HOST = os.environ.get("POSTGRES_HOST")
+
+  conn_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}"
+  print(conn_url)
+  main(conn_url, DB)
