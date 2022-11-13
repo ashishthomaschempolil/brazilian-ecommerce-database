@@ -1,14 +1,15 @@
 import mysql.connector
-from mysql.connector import errorcode # for error handling
+from mysql.connector import errorcode  # for error handling
 import os
 
-DB_NAME = 'brazil'
-USER = os.environ.get('MYSQL_USER')
-PASSWORD = os.environ.get('MYSQL_PASSWORD')
+DB_NAME = "brazil"
+USER = os.environ.get("MYSQL_USER")
+PASSWORD = os.environ.get("MYSQL_PASSWORD")
 
 TABLES = {}
-TABLES['orders'] = (
-    """
+TABLES[
+    "order_payments"
+] = """
     CREATE TABLE IF NOT EXISTS `order_payments` (
   `order_id` VARCHAR(45) NOT NULL,
   `payment_sequential` INT NULL,
@@ -19,10 +20,10 @@ TABLES['orders'] = (
   UNIQUE INDEX `order_id_UNIQUE` (`order_id` ASC) VISIBLE)
 ENGINE = InnoDB;
     """
-)
 
-TABLES['products'] = (
-"""    CREATE TABLE IF NOT EXISTS `products` (
+TABLES[
+    "products"
+] = """    CREATE TABLE IF NOT EXISTS `products` (
   `product_id` VARCHAR(45) NOT NULL,
   `product_category_name` VARCHAR(45) NULL,
   `product_name_length` INT NULL,
@@ -35,10 +36,10 @@ TABLES['products'] = (
   PRIMARY KEY (`product_id`))
 ENGINE = InnoDB;
 """
-)
 
-TABLES['geolocation'] = (
-"""    CREATE TABLE IF NOT EXISTS `geolocation` (
+TABLES[
+    "geolocation"
+] = """    CREATE TABLE IF NOT EXISTS `geolocation` (
   `geolocation_zipcode_prefix` INT NOT NULL,
   `geolocation_lat` DECIMAL(5) NOT NULL,
   `geolocation_lng` DECIMAL(5) NOT NULL,
@@ -47,11 +48,11 @@ TABLES['geolocation'] = (
   PRIMARY KEY (`geolocation_zipcode_prefix`))
 ENGINE = InnoDB;
 """
-)
 
 
-TABLES['products'] = (
-"""    CREATE TABLE IF NOT EXISTS `customers` (
+TABLES[
+    "customers"
+] = """    CREATE TABLE IF NOT EXISTS `mydb`.`customers` (
   `customer_id` VARCHAR(45) NOT NULL,
   `customer_unique_id` VARCHAR(45) NULL,
   `customer_zip_code_prefix` INT NOT NULL,
@@ -61,15 +62,15 @@ TABLES['products'] = (
   INDEX `geolocation_zipcode_prefix_idx` (`customer_zip_code_prefix` ASC) VISIBLE,
   CONSTRAINT `geolocation_zipcode_prefix`
     FOREIGN KEY (`customer_zip_code_prefix`)
-    REFERENCES `geolocation` (`geolocation_zipcode_prefix`)
+    REFERENCES `mydb`.`geolocation` (`geolocation_zipcode_prefix`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 """
-)
 
-TABLES['order_reviews'] = (
-"""    CREATE TABLE IF NOT EXISTS `order_reviews` (
+TABLES[
+    "order_reviews"
+] = """    CREATE TABLE IF NOT EXISTS `order_reviews` (
   `order_id` VARCHAR(45) NOT NULL,
   `review_id` VARCHAR(45) NOT NULL,
   `review_score` INT NULL,
@@ -80,16 +81,16 @@ TABLES['order_reviews'] = (
   PRIMARY KEY (`order_id`))
 ENGINE = InnoDB;
 """
-)
 
-TABLES['sellers'] = (
-"""   CREATE TABLE IF NOT EXISTS `sellers` (
+TABLES[
+    "sellers"
+] = """   CREATE TABLE IF NOT EXISTS `sellers` (
   `seller_id` VARCHAR(45) NOT NULL,
   `seller_zip_code_prefix` INT NOT NULL,
   `seller_city` VARCHAR(45) NULL,
   `seller_state` VARCHAR(3) NULL,
   PRIMARY KEY (`seller_id`, `seller_zip_code_prefix`),
-  INDEX `geolocation_zipcode_prefix_idx` (`seller_zip_code_prefix` ASC) VISIBLE,
+  INDEX `geolocation_zipcode_prefix_idx` (`seller_zip_code_prefix` ASC),
   CONSTRAINT `geolocation_zipcode_prefix`
     FOREIGN KEY (`seller_zip_code_prefix`)
     REFERENCES `geolocation` (`geolocation_zipcode_prefix`)
@@ -97,14 +98,11 @@ TABLES['sellers'] = (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 """
-)
 
 
-
-
-
-TABLES['order_items'] = (
-"""    CREATE TABLE IF NOT EXISTS `order_items` (
+TABLES[
+    "order_items"
+] = """    CREATE TABLE IF NOT EXISTS `order_items` (
   `order_id` VARCHAR(45) NOT NULL,
   `order_item_id` INT NULL,
   `product_id` VARCHAR(45) NOT NULL,
@@ -127,10 +125,10 @@ TABLES['order_items'] = (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 """
-)
 
-TABLES['orders'] = (
-"""    CREATE TABLE IF NOT EXISTS `orders` (
+TABLES[
+    "orders"
+] = """    CREATE TABLE IF NOT EXISTS `orders` (
   `order_id` VARCHAR(45) NOT NULL,
   `customer_id` VARCHAR(45) NOT NULL,
   `order_status` VARCHAR(10) NULL,
@@ -163,7 +161,6 @@ TABLES['orders'] = (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 """
-)
 
 
 def create_database(cursor) -> None:
@@ -171,21 +168,22 @@ def create_database(cursor) -> None:
     Create a new database
 
     :param cursor: Cursor to execute the query
-    """    
+    """
     try:
-        cursor.execute(
-            f"CREATE DATABASE {DB_NAME} DEFAULT CHARACTER SET 'utf8'")
+        cursor.execute(f"CREATE DATABASE {DB_NAME} DEFAULT CHARACTER SET 'utf8'")
     except mysql.connector.Error as err:
         print("Failed creating database: {}".format(err))
         exit(1)
 
-def create_tables(cursor) -> None:
+
+def create_tables(cursor, db_name) -> None:
     """
     Create all tables
 
     :param cursor: Cursor to execute the query
-    """    
-    for name, ddl in TABLES.iteritems():
+    """
+    cursor.execute(f"USE {db_name}")
+    for name, ddl in TABLES.items():
         try:
             print(f"Creating table {name}: ")
             cursor.execute(ddl)
@@ -196,6 +194,3 @@ def create_tables(cursor) -> None:
                 print(err.msg)
         else:
             print("OK")
-
-
-
