@@ -1,196 +1,85 @@
-import mysql.connector
-from mysql.connector import errorcode  # for error handling
+import psycopg2
 import os
+import utils.alter_tables as alter_tables
+import utils.create_tables as create_tables
 
-DB_NAME = "brazil"
-USER = os.environ.get("MYSQL_USER")
-PASSWORD = os.environ.get("MYSQL_PASSWORD")
 
-TABLES = {}
-TABLES[
-    "order_payments"
-] = """
-    CREATE TABLE IF NOT EXISTS `order_payments` (
-  `order_id` VARCHAR(45) NOT NULL,
-  `payment_sequential` INT NULL,
-  `payment_type` VARCHAR(32) NULL,
-  `payment_installments` INT NULL,
-  `payment_value` DECIMAL(3) NULL,
-  PRIMARY KEY (`order_id`),
-  UNIQUE INDEX `order_id_UNIQUE` (`order_id` ASC) VISIBLE)
-ENGINE = InnoDB;
+DB = os.environ.get("SQL_DB")
+USER = os.environ.get("SQL_USER")
+PASSWORD = os.environ.get("SQL_PASSWORD")
+PORT = os.environ.get("SQL_PORT")
+HOST = os.environ.get("SQL_HOST")
+
+conn_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}"
+
+def connect_to_db(conn_url: str = conn_url) -> psycopg2.extensions.connection:
+    """Connect to the POSGRESQL database and return the connection object
+
+    :param str conn_url: the connection url to the database, defaults to conn_url
+    :return psycopg2.extensions.connection: the connection object
     """
-
-TABLES[
-    "products"
-] = """    CREATE TABLE IF NOT EXISTS `products` (
-  `product_id` VARCHAR(45) NOT NULL,
-  `product_category_name` VARCHAR(45) NULL,
-  `product_name_length` INT NULL,
-  `product_description_length` INT NULL,
-  `product_photos_qty` INT NULL,
-  `product_weight_g` INT NULL,
-  `product_length_cm` INT NULL,
-  `product_height_cm` INT NULL,
-  `product_width_cm` INT NULL,
-  PRIMARY KEY (`product_id`))
-ENGINE = InnoDB;
-"""
-
-TABLES[
-    "geolocation"
-] = """    CREATE TABLE IF NOT EXISTS `geolocation` (
-  `geolocation_zipcode_prefix` INT NOT NULL,
-  `geolocation_lat` DECIMAL(5) NOT NULL,
-  `geolocation_lng` DECIMAL(5) NOT NULL,
-  `geolocation_city` VARCHAR(45) NOT NULL,
-  `geolocation_state` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`geolocation_zipcode_prefix`))
-ENGINE = InnoDB;
-"""
+    conn = psycopg2.connect(conn_url)
+    conn.autocommit = True
+    return conn
 
 
-TABLES[
-    "customers"
-] = """    CREATE TABLE IF NOT EXISTS `mydb`.`customers` (
-  `customer_id` VARCHAR(45) NOT NULL,
-  `customer_unique_id` VARCHAR(45) NULL,
-  `customer_zip_code_prefix` INT NOT NULL,
-  `customer_city` VARCHAR(45) NULL,
-  `customer_state` VARCHAR(45) NULL,
-  PRIMARY KEY (`customer_id`, `customer_zip_code_prefix`),
-  INDEX `geolocation_zipcode_prefix_idx` (`customer_zip_code_prefix` ASC) VISIBLE,
-  CONSTRAINT `geolocation_zipcode_prefix`
-    FOREIGN KEY (`customer_zip_code_prefix`)
-    REFERENCES `mydb`.`geolocation` (`geolocation_zipcode_prefix`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-"""
+def create_db(conn: psycopg2.extensions.connection, db: str = DB) -> None:
+    """Create a database
 
-TABLES[
-    "order_reviews"
-] = """    CREATE TABLE IF NOT EXISTS `order_reviews` (
-  `order_id` VARCHAR(45) NOT NULL,
-  `review_id` VARCHAR(45) NOT NULL,
-  `review_score` INT NULL,
-  `review_comment_title` VARCHAR(45) NULL,
-  `review_comment_message` VARCHAR(100) NULL,
-  `review_creation_date` DATETIME NULL,
-  `review_answer_timestamp` DATETIME NULL,
-  PRIMARY KEY (`order_id`))
-ENGINE = InnoDB;
-"""
-
-TABLES[
-    "sellers"
-] = """   CREATE TABLE IF NOT EXISTS `sellers` (
-  `seller_id` VARCHAR(45) NOT NULL,
-  `seller_zip_code_prefix` INT NOT NULL,
-  `seller_city` VARCHAR(45) NULL,
-  `seller_state` VARCHAR(3) NULL,
-  PRIMARY KEY (`seller_id`, `seller_zip_code_prefix`),
-  INDEX `geolocation_zipcode_prefix_idx` (`seller_zip_code_prefix` ASC),
-  CONSTRAINT `geolocation_zipcode_prefix`
-    FOREIGN KEY (`seller_zip_code_prefix`)
-    REFERENCES `geolocation` (`geolocation_zipcode_prefix`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-"""
-
-
-TABLES[
-    "order_items"
-] = """    CREATE TABLE IF NOT EXISTS `order_items` (
-  `order_id` VARCHAR(45) NOT NULL,
-  `order_item_id` INT NULL,
-  `product_id` VARCHAR(45) NOT NULL,
-  `seller_id` VARCHAR(45) NOT NULL,
-  `shipping_limit_date` DATETIME NULL,
-  `price` DECIMAL(2) NULL,
-  `freight_value` DECIMAL(2) NULL,
-  PRIMARY KEY (`order_id`, `seller_id`, `product_id`),
-  INDEX `product_id_idx` (`product_id` ASC) VISIBLE,
-  INDEX `seller_id_idx` (`seller_id` ASC) VISIBLE,
-  CONSTRAINT `product_id`
-    FOREIGN KEY (`product_id`)
-    REFERENCES `products` (`product_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `seller_id`
-    FOREIGN KEY (`seller_id`)
-    REFERENCES `sellers` (`seller_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-"""
-
-TABLES[
-    "orders"
-] = """    CREATE TABLE IF NOT EXISTS `orders` (
-  `order_id` VARCHAR(45) NOT NULL,
-  `customer_id` VARCHAR(45) NOT NULL,
-  `order_status` VARCHAR(10) NULL,
-  `order_purchase_timestamp` DATETIME NULL,
-  `order_approved_timestamp` DATETIME NULL,
-  `order_delivered_carrier_date` DATETIME NULL,
-  `order_delivered_customer_date` DATETIME NULL,
-  `order_estimated_delivery_date` DATETIME NULL,
-  PRIMARY KEY (`order_id`, `customer_id`),
-  INDEX `customer_id_idx` (`customer_id` ASC) VISIBLE,
-  CONSTRAINT `order_id`
-    FOREIGN KEY (`order_id`)
-    REFERENCES `order_payments` (`order_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `customer_id`
-    FOREIGN KEY (`customer_id`)
-    REFERENCES `customers` (`customer_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `order_id`
-    FOREIGN KEY (`order_id`)
-    REFERENCES `order_reviews` (`order_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `order_id`
-    FOREIGN KEY (`order_id`)
-    REFERENCES `order_items` (`order_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-"""
-
-
-def create_database(cursor) -> None:
+    :param psycopg2.extensions.connection conn: the connection object
+    :param str db: the name of the database to create, defaults to DB
+    :return None:
     """
-    Create a new database
-
-    :param cursor: Cursor to execute the query
-    """
-    try:
-        cursor.execute(f"CREATE DATABASE {DB_NAME} DEFAULT CHARACTER SET 'utf8'")
-    except mysql.connector.Error as err:
-        print("Failed creating database: {}".format(err))
-        exit(1)
-
-
-def create_tables(cursor, db_name) -> None:
-    """
-    Create all tables
-
-    :param cursor: Cursor to execute the query
-    """
-    cursor.execute(f"USE {db_name}")
-    for name, ddl in TABLES.items():
+    with conn.cursor() as cursor:
         try:
-            print(f"Creating table {name}: ")
-            cursor.execute(ddl)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
-            else:
-                print(err.msg)
-        else:
-            print("OK")
+            cursor.execute(f"CREATE DATABASE {db}")
+            print(f"Database {db} created successfully")
+        except psycopg2.errors.DuplicateDatabase:
+            print(f"Database {db} already exists")
+
+
+def create_tables(conn: psycopg2.extensions.connection) -> None:
+    """Create the tables in the database
+
+    :param psycopg2.extensions.connection conn: the connection object
+    :return None:
+    """
+    with conn.cursor() as cursor:
+        for table_name, table_sql in create_tables.create_tables.items():
+            try:
+                cursor.execute(table_sql)
+                print(f"Table {table_name} created successfully")
+            except psycopg2.errors.DuplicateTable:
+                print(f"Table {table_name} already exists")
+
+
+def alter_tables(conn: psycopg2.extensions.connection) -> None:
+    """Alter the tables in the database to add foreign keys
+
+    :param psycopg2.extensions.connection conn: the connection object
+    :return None:
+    """
+    with conn.cursor() as cursor:
+        for table_name, table_sql in alter_tables.alter_tables.items():
+            try:
+                cursor.execute(table_sql)
+                print(f"Table {table_name} altered successfully")
+            except psycopg2.errors.DuplicateTable:
+                print(f"Table {table_name} already exists")
+
+
+def main(conn_url: str = conn_url, db: str = DB) -> None:
+    """Main function to create the database and tables
+
+    :param str conn_url: the connection url to the database, defaults to conn_url
+    :param str db: the name of the database to create, defaults to DB
+    :return None:
+    """
+    conn = connect_to_db(conn_url)
+    create_db(conn, db)
+    conn = connect_to_db(conn_url + f"/{db}")
+    create_tables(conn)
+    alter_tables(conn)
+
+if __name__ == "__main__":
+    main()

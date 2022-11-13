@@ -20,16 +20,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-import mysql.connector
 from database import create_db
+
 sns.set()
-import sqlalchemy
 import psycopg2
 
 # %%
-#list files in the data folder
+# list files in the data folder
 
-os.listdir('data')
+os.listdir("data")
 
 # %% [markdown]
 # `olist_orders_dataset.csv`: ['order_approved_at', 'order_delivered_carrier_date', 'order_delivered_customer_date']
@@ -40,24 +39,26 @@ os.listdir('data')
 # `olist_products_dataset.csv`: ['product_category_name', 'product_name_lenght', 'product_description_lenght', 'product_photos_qty', 'product_weight_g', 'product_length_cm', 'product_height_cm', 'product_width_cm']
 
 # %%
-#create a connection to the database
-user = 'postgres'
-password = 'postgrespw'
-host = 'host.docker.internal'
+# create a connection to the database
+user = "postgres"
+password = "postgrespw"
+host = "host.docker.internal"
 port = 55003
-db = 'brazil'
-conn_url = (
-            "postgres://postgres:postgrespw@localhost:55000"
-        )
+db = "brazil"
+conn_url = "postgres://postgres:postgrespw@localhost:55000"
 conn = psycopg2.connect(conn_url)
-conn.set_session(autocommit=True) #so that create table & database statements are committed
+conn.set_session(
+    autocommit=True
+)  # so that create table & database statements are committed
 cur = conn.cursor()
 
 
 # %%
 tables = {}
 
-tables['order_payments'] = """CREATE TABLE IF NOT EXISTS order_payments
+tables[
+    "order_payments"
+] = """CREATE TABLE IF NOT EXISTS order_payments
 (
     order_id character varying(45)[] NOT NULL,
     payment_sequential integer,
@@ -66,7 +67,9 @@ tables['order_payments'] = """CREATE TABLE IF NOT EXISTS order_payments
     payment_value numeric(3)[],
     PRIMARY KEY (order_id)
 );"""
-tables['order_reviews'] = """ CREATE TABLE IF NOT EXISTS order_reviews
+tables[
+    "order_reviews"
+] = """ CREATE TABLE IF NOT EXISTS order_reviews
 (
     order_id character varying(45)[] NOT NULL,
     review_id character varying(45)[],
@@ -77,7 +80,9 @@ tables['order_reviews'] = """ CREATE TABLE IF NOT EXISTS order_reviews
     review_answer_timestamp timestamp without time zone,
     PRIMARY KEY (order_id)
 );"""
-tables['order_items'] = """ CREATE TABLE IF NOT EXISTS order_items
+tables[
+    "order_items"
+] = """ CREATE TABLE IF NOT EXISTS order_items
 (
     order_id character varying(45)[] NOT NULL,
     order_item_id numeric,
@@ -88,7 +93,9 @@ tables['order_items'] = """ CREATE TABLE IF NOT EXISTS order_items
     freight_value numeric,
     PRIMARY KEY (order_id)
 );"""
-tables['orders'] = """ CREATE TABLE IF NOT EXISTS orders
+tables[
+    "orders"
+] = """ CREATE TABLE IF NOT EXISTS orders
 (
     order_id character varying(45)[] NOT NULL,
     customer_id character varying(45)[],
@@ -100,7 +107,9 @@ tables['orders'] = """ CREATE TABLE IF NOT EXISTS orders
     order_estimated_delivery_date timestamp without time zone,
     PRIMARY KEY (order_id)
 );"""
-tables['products'] = """ CREATE TABLE IF NOT EXISTS products
+tables[
+    "products"
+] = """ CREATE TABLE IF NOT EXISTS products
 (
     product_id character varying(45)[] NOT NULL,
     product_category_name character varying(45)[],
@@ -113,7 +122,9 @@ tables['products'] = """ CREATE TABLE IF NOT EXISTS products
     product_width_cm numeric,
     PRIMARY KEY (product_id)
 );"""
-tables['sellers'] = """ CREATE TABLE IF NOT EXISTS sellers
+tables[
+    "sellers"
+] = """ CREATE TABLE IF NOT EXISTS sellers
 (
     seller_id character varying(45)[] NOT NULL,
     seller_zip_code_prefix numeric,
@@ -121,7 +132,9 @@ tables['sellers'] = """ CREATE TABLE IF NOT EXISTS sellers
     seller_state character varying(3)[],
     PRIMARY KEY (seller_id)
 );"""
-tables['customers'] = """ CREATE TABLE IF NOT EXISTS customers
+tables[
+    "customers"
+] = """ CREATE TABLE IF NOT EXISTS customers
 (
     customer_id character varying(45)[] NOT NULL,
     customer_unique_id character varying(45)[],
@@ -130,7 +143,9 @@ tables['customers'] = """ CREATE TABLE IF NOT EXISTS customers
     customer_state character varying(45)[],
     PRIMARY KEY (customer_id)
 );"""
-tables['geolocation'] = """ CREATE TABLE IF NOT EXISTS geolocation
+tables[
+    "geolocation"
+] = """ CREATE TABLE IF NOT EXISTS geolocation
 (
     geolocation_zipcode_prefix numeric NOT NULL,
     geolocation_lat numeric,
@@ -150,59 +165,75 @@ for table in tables:
     conn.commit()
 
 # %%
-#show the tables in the database
+# show the tables in the database
 alter_tables = {}
 
-alter_tables['geolocation'] = """ALTER TABLE IF EXISTS customers
+alter_tables[
+    "geolocation"
+] = """ALTER TABLE IF EXISTS customers
     ADD FOREIGN KEY (customer_zip_code_prefix)
     REFERENCES geolocation (geolocation_zipcode_prefix) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
 
-alter_tables['sellers'] = """ALTER TABLE IF EXISTS sellers
+alter_tables[
+    "sellers"
+] = """ALTER TABLE IF EXISTS sellers
     ADD FOREIGN KEY (seller_zip_code_prefix)
     REFERENCES geolocation (geolocation_zipcode_prefix) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
 
-alter_tables['orders1'] = """ALTER TABLE IF EXISTS orders
+alter_tables[
+    "orders1"
+] = """ALTER TABLE IF EXISTS orders
     ADD CONSTRAINT order_payments FOREIGN KEY (order_id)
     REFERENCES order_payments (order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
 
-alter_tables['orders2'] = """ALTER TABLE IF EXISTS orders
+alter_tables[
+    "orders2"
+] = """ALTER TABLE IF EXISTS orders
     ADD CONSTRAINT order_reviews FOREIGN KEY (order_id)
     REFERENCES order_reviews (order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
 
-alter_tables['orders3'] = """ALTER TABLE IF EXISTS orders
+alter_tables[
+    "orders3"
+] = """ALTER TABLE IF EXISTS orders
     ADD CONSTRAINT customers FOREIGN KEY (customer_id)
     REFERENCES customers (customer_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
 
-alter_tables['orders4'] = """ALTER TABLE IF EXISTS orders
+alter_tables[
+    "orders4"
+] = """ALTER TABLE IF EXISTS orders
     ADD CONSTRAINT order_items FOREIGN KEY (order_id)
     REFERENCES order_items (order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
 
-alter_tables['order_items1'] = """ALTER TABLE IF EXISTS order_items
+alter_tables[
+    "order_items1"
+] = """ALTER TABLE IF EXISTS order_items
     ADD FOREIGN KEY (product_id)
     REFERENCES products (product_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
 
-alter_tables['order_items2'] = """ALTER TABLE IF EXISTS order_items
+alter_tables[
+    "order_items2"
+] = """ALTER TABLE IF EXISTS order_items
     ADD FOREIGN KEY (seller_id)
     REFERENCES sellers (seller_id) MATCH SIMPLE
     ON UPDATE NO ACTION
@@ -217,15 +248,18 @@ for alter_table in alter_tables:
     conn.commit()
 
 # %%
-cur.execute("""
+cur.execute(
+    """
 SELECT *
 FROM pg_catalog.pg_tables
 WHERE schemaname != 'pg_catalog' AND 
     schemaname != 'information_schema';
-""")
+"""
+)
 
 # %%
-cur.execute("""
+cur.execute(
+    """
 
 
 -- DROP DATABASE IF EXISTS brazil;
@@ -331,7 +365,8 @@ CREATE TABLE IF NOT EXISTS public.orders
     PRIMARY KEY (order_id)
 );
 
-END;""")
+END;"""
+)
 
 # %%
 """ALTER TABLE IF EXISTS geolocation
