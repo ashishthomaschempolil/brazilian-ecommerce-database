@@ -1,10 +1,7 @@
 import psycopg2
 import os
-import database.utils.alter_tables as alter_tables
-import database.utils.create_tables as create_tables
-
-
-
+import database.utils.create_tables_query as create_tables_query
+import database.utils.alter_tables_query as alter_tables_query
 
 def connect_to_db(conn_url: str) -> psycopg2.extensions.connection:
     """Connect to the POSGRESQL database and return the connection object
@@ -32,14 +29,14 @@ def create_db(conn: psycopg2.extensions.connection, db: str) -> None:
             print(f"Database {db} already exists")
 
 
-def create_tables(conn: psycopg2.extensions.connection) -> None:
+def create_tables(conn: psycopg2.extensions.connection, create_tables_query_dict: dict = create_tables_query.create_tables_query_dict) -> None:
     """Create the tables in the database
 
     :param psycopg2.extensions.connection conn: the connection object
     :return None:
     """
     with conn.cursor() as cursor:
-        for table_name, table_sql in create_tables.create_tables.items():
+        for table_name, table_sql in create_tables_query_dict.items():
             try:
                 cursor.execute(table_sql)
                 print(f"Table {table_name} created successfully")
@@ -47,14 +44,14 @@ def create_tables(conn: psycopg2.extensions.connection) -> None:
                 print(f"Table {table_name} already exists")
 
 
-def alter_tables(conn: psycopg2.extensions.connection) -> None:
+def alter_tables(conn: psycopg2.extensions.connection, alter_tables_query_dict: dict = alter_tables_query.alter_tables_query_dict) -> None:
     """Alter the tables in the database to add foreign keys
 
     :param psycopg2.extensions.connection conn: the connection object
     :return None:
     """
     with conn.cursor() as cursor:
-        for table_name, table_sql in alter_tables.alter_tables.items():
+        for table_name, table_sql in alter_tables_query_dict.items():
             try:
                 cursor.execute(table_sql)
                 print(f"Table {table_name} altered successfully")
@@ -85,5 +82,5 @@ if __name__ == "__main__":
   HOST = os.environ.get("POSTGRES_HOST")
 
   conn_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}"
-  print(conn_url)
+  print(create_tables)
   main(conn_url, DB)

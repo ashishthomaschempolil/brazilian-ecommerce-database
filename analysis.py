@@ -25,6 +25,12 @@ sns.set()
 import psycopg2
 
 # %%
+import database.utils.create_tables as create_tables
+
+for k in create_tables.create_tables.items():
+    print(k)
+
+# %%
 #list files in the data folder
 
 os.listdir('data')

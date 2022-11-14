@@ -1,6 +1,6 @@
-create_tables = {}
+create_tables_query_dict = {}
 
-create_tables[
+create_tables_query_dict[
     "order_payments"
 ] = """CREATE TABLE IF NOT EXISTS order_payments
 (
@@ -11,7 +11,7 @@ create_tables[
     payment_value numeric(3)[],
     PRIMARY KEY (order_id)
 );"""
-create_tables[
+create_tables_query_dict[
     "order_reviews"
 ] = """ CREATE TABLE IF NOT EXISTS order_reviews
 (
@@ -24,7 +24,7 @@ create_tables[
     review_answer_timestamp timestamp without time zone,
     PRIMARY KEY (order_id)
 );"""
-create_tables[
+create_tables_query_dict[
     "order_items"
 ] = """ CREATE TABLE IF NOT EXISTS order_items
 (
@@ -37,7 +37,7 @@ create_tables[
     freight_value numeric,
     PRIMARY KEY (order_id)
 );"""
-create_tables[
+create_tables_query_dict[
     "orders"
 ] = """ CREATE TABLE IF NOT EXISTS orders
 (
@@ -51,7 +51,7 @@ create_tables[
     order_estimated_delivery_date timestamp without time zone,
     PRIMARY KEY (order_id)
 );"""
-create_tables[
+create_tables_query_dict[
     "products"
 ] = """ CREATE TABLE IF NOT EXISTS products
 (
@@ -66,7 +66,7 @@ create_tables[
     product_width_cm numeric,
     PRIMARY KEY (product_id)
 );"""
-create_tables[
+create_tables_query_dict[
     "sellers"
 ] = """ CREATE TABLE IF NOT EXISTS sellers
 (
@@ -76,7 +76,7 @@ create_tables[
     seller_state character varying(3)[],
     PRIMARY KEY (seller_id)
 );"""
-create_tables[
+create_tables_query_dict[
     "customers"
 ] = """ CREATE TABLE IF NOT EXISTS customers
 (
@@ -87,7 +87,7 @@ create_tables[
     customer_state character varying(45)[],
     PRIMARY KEY (customer_id)
 );"""
-create_tables[
+create_tables_query_dict[
     "geolocation"
 ] = """ CREATE TABLE IF NOT EXISTS geolocation
 (
