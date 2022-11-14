@@ -18,6 +18,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      - warehouse
   create_db:
     build: .
     container_name: create_databases
@@ -31,6 +41,8 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
     depends_on:
       - warehouse
-    restart: always
+    restart: on-failure
+
+  
 
     

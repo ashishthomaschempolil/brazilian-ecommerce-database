@@ -52,6 +52,7 @@ def alter_tables(conn: psycopg2.extensions.connection, alter_tables_query_dict: 
     """
     with conn.cursor() as cursor:
         for table_name, table_sql in alter_tables_query_dict.items():
+            print(table_name)
             try:
                 cursor.execute(table_sql)
                 print(f"Table {table_name} altered successfully")
@@ -66,10 +67,6 @@ def main(conn_url: str, db: str) -> None:
     :param str db: the name of the database to create, defaults to DB
     :return None:
     """
-    # print("Creating database")
-    # conn = connect_to_db(conn_url)
-    # create_db(conn, db)
-    # print("Database created")
     conn = connect_to_db(conn_url + f"/{db}")
     create_tables(conn)
     alter_tables(conn)
@@ -82,5 +79,4 @@ if __name__ == "__main__":
   HOST = os.environ.get("POSTGRES_HOST")
 
   conn_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}"
-  print(create_tables)
   main(conn_url, DB)

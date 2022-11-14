@@ -20,20 +20,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-# from database import create_db
+import create_db
 sns.set()
 import psycopg2
 
 # %%
-import database.utils.create_tables as create_tables
+conn_url = "postgresql://user:user@localhost:5432"
 
-for k in create_tables.create_tables.items():
-    print(k)
+create_db.main(conn_url, 'brazil')
 
 # %%
-#list files in the data folder
-
-os.listdir('data')
+conn
 
 # %% [markdown]
 # `olist_orders_dataset.csv`: ['order_approved_at', 'order_delivered_carrier_date', 'order_delivered_customer_date']
@@ -42,24 +39,6 @@ os.listdir('data')
 # `olist_order_reviews_dataset.csv`: ['review_comment_title', 'review_comment_message']
 #
 # `olist_products_dataset.csv`: ['product_category_name', 'product_name_lenght', 'product_description_lenght', 'product_photos_qty', 'product_weight_g', 'product_length_cm', 'product_height_cm', 'product_width_cm']
-
-# %%
-os.environ
-
-# %%
-#create a connection to the database
-user = 'postgres'
-password = 'postgrespw'
-host = 'host.docker.internal'
-port = 55003
-db = 'brazil'
-conn_url = (
-            "postgres://postgres:postgrespw@localhost:55000"
-        )
-conn = psycopg2.connect(conn_url)
-conn.set_session(autocommit=True) #so that create table & database statements are committed
-cur = conn.cursor()
-
 
 # %%
 tables = {}
