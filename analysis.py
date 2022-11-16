@@ -109,3 +109,9 @@ insert_into_sql(order_reviews, "order_reviews", engine)
 
 
 # %%
+geolocation.head()
+
+# %%
+geolocation.geolocation_zip_code_prefix.value_counts()[geolocation.geolocation_zip_code_prefix.value_counts().index == 1046]
+
+# %%
