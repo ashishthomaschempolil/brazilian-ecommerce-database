@@ -92,8 +92,6 @@ create_tables_query_dict[
 ] = """ CREATE TABLE IF NOT EXISTS geolocation
 (
     geolocation_zip_code_prefix numeric NOT NULL,
-    geolocation_lat numeric,
-    geolocation_lng numeric,
     geolocation_city text,
     geolocation_state text,
     PRIMARY KEY (geolocation_zip_code_prefix)
