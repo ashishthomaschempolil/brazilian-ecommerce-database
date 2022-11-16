@@ -60,7 +60,7 @@ alter_tables_query_dict[
     "geolocation"
 ] = """ALTER TABLE IF EXISTS customers
     ADD FOREIGN KEY (customer_zip_code_prefix)
-    REFERENCES geolocation (geolocation_zipcode_prefix) MATCH SIMPLE
+    REFERENCES geolocation (geolocation_zip_code_prefix) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
@@ -69,8 +69,7 @@ alter_tables_query_dict[
     "sellers"
 ] = """ALTER TABLE IF EXISTS sellers
     ADD FOREIGN KEY (seller_zip_code_prefix)
-    REFERENCES geolocation (geolocation_zipcode_prefix) MATCH SIMPLE
+    REFERENCES geolocation (geolocation_zip_code_prefix) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;"""
-
