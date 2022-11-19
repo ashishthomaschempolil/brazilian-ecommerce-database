@@ -71,9 +71,7 @@ create_tables_query_dict[
 ] = """ CREATE TABLE IF NOT EXISTS sellers
 (
     seller_id text NOT NULL,
-    seller_zip_code_prefix numeric,
-    seller_city text,
-    seller_state text,
+    geolocation_id numeric,
     PRIMARY KEY (seller_id)
 );"""
 create_tables_query_dict[
@@ -82,9 +80,7 @@ create_tables_query_dict[
 (
     customer_id text NOT NULL,
     customer_unique_id text,
-    customer_zip_code_prefix numeric,
-    customer_city text,
-    customer_state text,
+    geolocation_id numeric,
     PRIMARY KEY (customer_id)
 );"""
 create_tables_query_dict[
