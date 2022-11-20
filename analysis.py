@@ -19,7 +19,7 @@
 import pandas as pd
 import numpy as np
 import os
-import create_db
+import database.create_db
 import psycopg2  # postgres
 from sqlalchemy import (
     create_engine,
@@ -167,12 +167,12 @@ def make_common_city_values(
     for index, row in df.iterrows():
         if row[column] not in cities:
             closest_match = difflib.get_close_matches(
-                row[column], cities, n=1, cutoff=0.7
+                row[column], cities, n=2, cutoff=0.7
             )
             if (
                 closest_match
             ):  # if there is a match, assign it otherwise leave it as it is
-                df.loc[index, column] = closest_match
+                df.loc[index, column] = closest_match[0]
     return df
 
 
@@ -186,24 +186,24 @@ for file in os.listdir("./data/"):
 
 # %%
 # cities
-cities = pd.read_csv("./data/cities.csv")
+cities = pd.read_csv("./data/raw/cities.csv")
 cities = preprocess_city_column(cities, "name").name.values
 
 # sellers
-sellers = pd.read_csv("./data/olist_sellers_dataset.csv")
+sellers = pd.read_csv("./data/raw/olist_sellers_dataset.csv")
 sellers.drop(columns=["seller_zip_code_prefix"], inplace=True)
 sellers = preprocess_city_column(sellers, "seller_city")
 sellers = set_asstr(sellers, "seller_city")
 sellers = set_asstr(sellers, "seller_state")
 
 # orders
-orders = pd.read_csv("./data/olist_orders_dataset.csv")
+orders = pd.read_csv("./data/raw/olist_orders_dataset.csv")
 
 # order items
-order_items = pd.read_csv("./data/olist_order_items_dataset.csv")
+order_items = pd.read_csv("./data/raw/olist_order_items_dataset.csv")
 
 # customers
-customers = pd.read_csv("./data/olist_customers_dataset.csv")
+customers = pd.read_csv("./data/raw/olist_customers_dataset.csv")
 customers.drop(columns=["customer_zip_code_prefix"], inplace=True)
 customers = preprocess_city_column(customers, "customer_city")
 customers = make_common_city_values(customers, "customer_city", cities)
@@ -211,7 +211,7 @@ customers = set_asstr(customers, "customer_city")
 customers = set_asstr(customers, "customer_state")
 
 # geo location
-geolocation = pd.read_csv("./data/olist_geolocation_dataset.csv")
+geolocation = pd.read_csv("./data/raw/olist_geolocation_dataset.csv")
 geolocation = preprocess_geolocation(geolocation)
 geolocation = make_common_city_values(geolocation, "geolocation_city", cities)
 geolocation = set_asstr(geolocation, "geolocation_city")
@@ -224,6 +224,7 @@ geolocation = append_rows_to_geolocation(
 geolocation = append_rows_to_geolocation(
     customers, ["customer_city", "customer_state"], geolocation
 )
+geolocation.drop_duplicates(subset=["geolocation_city", "geolocation_state"], inplace=True, keep="first")
 geolocation.reset_index(drop=True, inplace=True)
 geolocation["geolocation_id"] = geolocation.index + 1
 geolocation = geolocation.loc[
@@ -251,17 +252,17 @@ customers = pd.merge(
 
 
 # order payments
-order_payments = pd.read_csv("./data/olist_order_payments_dataset.csv")
+order_payments = pd.read_csv("./data/raw/olist_order_payments_dataset.csv")
 
 # order reviews
-order_reviews = pd.read_csv("./data/olist_order_reviews_dataset.csv")
+order_reviews = pd.read_csv("./data/raw/olist_order_reviews_dataset.csv")
 
 # products
-products = pd.read_csv("./data/olist_products_dataset.csv")
+products = pd.read_csv("./data/raw/olist_products_dataset.csv")
 
 # product category name translation
 product_category_name_translation = pd.read_csv(
-    "./data/product_category_name_translation.csv"
+    "./data/raw/product_category_name_translation.csv"
 )
 
 
@@ -275,7 +276,68 @@ map_values = dict(
 products["product_category_name"] = products["product_category_name"].map(map_values)
 
 # %%
-sellers.head()
+order_payments.query("order_id == 'fa65dad1b0e818e3ccc5cb0e39231352'")
+
+# %%
+order_reviews.head()
+
+# %%
+orders.merge(
+    order_payments, how="outer", on="order_id"
+)
+
+# %%
+order_reviews['review_id'].value_counts()
+
+# %%
+order_reviews['order_id'].value_counts()
+
+
+# %%
+order_reviews.query("order_id == 'df56136b8031ecd28e200bb18e6ddb2e'")
+
+# %%
+order_reviews.query("review_id == 'c444278834184f72b1484dfe47de7f97'")
+
+# %%
+order_reviews.drop_duplicates(subset=['review_id'], inplace=True, keep = False)
+
+# %%
+order_items['order_items_pk'] = order_items['order_id'] + order_items['order_item_id'].astype(str)
+order_items['order_items_pk'].value_counts()
+
+# %%
+order_payments
+
+# %%
+geolocation.loc[geolocation.geolocation_id.isin([170, 174, 175, 176])]
+
+# %%
+geolocation.loc[geolocation.duplicated(
+    subset=["geolocation_city", "geolocation_state"]
+), 'geolocation_city']
+
+# %%
+i = 0
+list_ids = []
+for index, row in geolocation.iterrows():
+    if type['geolocation_city'] == list:
+        i+=1
+        list_ids.append(row['geolocation_id'])
+print(i)
+
+# %% [markdown]
+# #change the geoloation duplicated values
+
+# %%
+import transform.transform as transform
+
+transform.preprocess('./data/raw/','./data/preprocessed/')
+
+# %%
+order_payments = pd.read_csv("./data/preprocessed/order_payments.csv")
+
+order_payments.head()
 
 # %%
 sellers["city_state"] = sellers["seller_city"] + "_" + sellers["seller_state"]
@@ -495,6 +557,9 @@ products.head()
 
 geolocation.head()
 
+
+# %%
+geolocati
 
 # %%
 geolocation.zip

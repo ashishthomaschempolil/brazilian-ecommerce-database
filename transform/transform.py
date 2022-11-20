@@ -4,7 +4,7 @@ import os
 import unidecode
 import difflib
 # import transform.utils as utils
-import utils.utils as utils
+import transform.utils as utils
 import time
 
 def preprocess(raw_folder:str = "./data/raw/", processed_folder:str = "./data/preprocessed")->None:
@@ -31,10 +31,20 @@ def preprocess(raw_folder:str = "./data/raw/", processed_folder:str = "./data/pr
     # orders
     print("Preprocessing orders...")
     orders = pd.read_csv(os.path.join(raw_folder, "olist_orders_dataset.csv"))
+    orders.rename(
+        {
+            "order_approved_at": "order_approved_timestamp"
+        },
+        axis = 1,
+        inplace = True
+    )
 
     # order items
     print("Preprocessing order items...")
     order_items = pd.read_csv(os.path.join(raw_folder, "olist_order_items_dataset.csv"))
+    order_items['order_items_pk'] = order_items['order_id'] + "_" + order_items['order_item_id'].astype(str)
+    order_items = order_items.loc[:, ['order_items_pk', 'order_id', 'order_item_id', 'product_id', 'seller_id',
+       'shipping_limit_date', 'price', 'freight_value']]
 
     # customers
     print("Preprocessing customers...")
@@ -62,6 +72,7 @@ def preprocess(raw_folder:str = "./data/raw/", processed_folder:str = "./data/pr
     geolocation = utils.append_rows_to_geolocation(
         customers, ["customer_city", "customer_state"], geolocation
     )
+    geolocation.drop_duplicates(subset= ["geolocation_city", "geolocation_state"],inplace=True, keep="first")
     geolocation.reset_index(drop=True, inplace=True)
     geolocation["geolocation_id"] = geolocation.index + 1
     geolocation = geolocation.loc[
@@ -91,14 +102,26 @@ def preprocess(raw_folder:str = "./data/raw/", processed_folder:str = "./data/pr
     # order payments
     print("Preprocessing order payments...")
     order_payments = pd.read_csv(os.path.join(raw_folder, "olist_order_payments_dataset.csv"))
+    order_payments["order_payments_pk"] = order_payments["order_id"] + "_" + order_payments["payment_sequential"].astype(str)
+    order_payments = order_payments.loc[:, ["order_payments_pk", "order_id", "payment_sequential", "payment_type", "payment_installments", "payment_value"]]
 
     # order reviews
     print("Preprocessing order reviews...")
     order_reviews = pd.read_csv(os.path.join(raw_folder, "olist_order_reviews_dataset.csv"))
+    #found bot reviews, which are tagged with same review_id
+    order_reviews.drop_duplicates(subset=["review_id"], inplace=True, keep=False)
 
     # products
     print("Preprocessing products...")
     products = pd.read_csv(os.path.join(raw_folder, "olist_products_dataset.csv"))
+    products.rename(
+        {
+            "product_name_lenght": "product_name_length",
+            "product_description_lenght": "product_description_length"
+        },
+        axis=1,
+        inplace=True,
+    )
 
     # product category name translation
     product_category_name_translation = pd.read_csv(

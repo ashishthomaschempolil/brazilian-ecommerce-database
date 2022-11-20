@@ -1,4 +1,6 @@
 psycopg2
 pandas
 numpy
-difflib
+unidecode
+sqlalchemy
+# difflib

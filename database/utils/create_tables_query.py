@@ -4,30 +4,32 @@ create_tables_query_dict[
     "order_payments"
 ] = """CREATE TABLE IF NOT EXISTS order_payments
 (
+    order_payments_pk text NOT NULL,
     order_id text NOT NULL,
     payment_sequential integer,
     payment_type text,
     payment_installments integer,
-    payment_value numeric(3),
-    PRIMARY KEY (order_id)
+    payment_value numeric,
+    PRIMARY KEY (order_payments_pk)
 );"""
 create_tables_query_dict[
     "order_reviews"
 ] = """ CREATE TABLE IF NOT EXISTS order_reviews
 (
+    review_id text NOT NULL,
     order_id text NOT NULL,
-    review_id text,
     review_score numeric,
     review_comment_title text,
     review_comment_message text,
     review_creation_date timestamp without time zone,
     review_answer_timestamp timestamp without time zone,
-    PRIMARY KEY (order_id)
+    PRIMARY KEY (review_id)
 );"""
 create_tables_query_dict[
     "order_items"
 ] = """ CREATE TABLE IF NOT EXISTS order_items
 (
+    order_items_pk text NOT NULL,
     order_id text NOT NULL,
     order_item_id numeric,
     product_id text,
@@ -35,7 +37,7 @@ create_tables_query_dict[
     shipping_limit_date timestamp without time zone,
     price numeric,
     freight_value numeric,
-    PRIMARY KEY (order_id)
+    PRIMARY KEY (order_items_pk)
 );"""
 create_tables_query_dict[
     "orders"
@@ -87,8 +89,8 @@ create_tables_query_dict[
     "geolocation"
 ] = """ CREATE TABLE IF NOT EXISTS geolocation
 (
-    geolocation_zip_code_prefix numeric NOT NULL,
+    geolocation_id numeric NOT NULL,
     geolocation_city text,
     geolocation_state text,
-    PRIMARY KEY (geolocation_zip_code_prefix)
+    PRIMARY KEY (geolocation_id)
 );"""

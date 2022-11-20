@@ -15,19 +15,19 @@ def connect_to_db(conn_url: str) -> psycopg2.extensions.connection:
     return conn
 
 
-def create_db(conn: psycopg2.extensions.connection, db: str) -> None:
-    """Create a database
+# def create_db(conn: psycopg2.extensions.connection, db: str) -> None:
+#     """Create a database
 
-    :param psycopg2.extensions.connection conn: the connection object
-    :param str db: the name of the database to create, defaults to DB
-    :return None:
-    """
-    with conn.cursor() as cursor:
-        try:
-            cursor.execute(f"CREATE DATABASE {db}")
-            print(f"Database {db} created successfully")
-        except psycopg2.errors.DuplicateDatabase:
-            print(f"Database {db} already exists")
+#     :param psycopg2.extensions.connection conn: the connection object
+#     :param str db: the name of the database to create, defaults to DB
+#     :return None:
+#     """
+#     with conn.cursor() as cursor:
+#         try:
+#             cursor.execute(f"CREATE DATABASE {db}")
+#             print(f"Database {db} created successfully")
+#         except psycopg2.errors.DuplicateDatabase:
+#             print(f"Database {db} already exists")
 
 
 def create_tables(

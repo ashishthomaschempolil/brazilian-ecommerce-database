@@ -118,10 +118,10 @@ def make_common_city_values(
     for index, row in df.iterrows():
         if row[column] not in cities:
             closest_match = difflib.get_close_matches(
-                row[column], cities, n=1, cutoff=0.7
+                row[column], cities, n=2, cutoff=0.7
             )
             if (
                 closest_match
             ):  # if there is a match, assign it otherwise leave it as it is
-                df.loc[index, column] = closest_match
+                df.loc[index, column] = closest_match[0]
     return df
