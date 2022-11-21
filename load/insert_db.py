@@ -41,6 +41,9 @@ def insert_data_into_db(conn_url:str, db:str, preprocessed_folder:str = "./data/
     customers = pd.read_csv(os.path.join(preprocessed_folder, "customers.csv"))
     insert_into_sql(customers, "customers", engine)
 
+    orders = pd.read_csv(os.path.join(preprocessed_folder, "orders.csv"))
+    insert_into_sql(orders, "orders", engine)
+
     order_payments = pd.read_csv(os.path.join(preprocessed_folder, "order_payments.csv"))
     insert_into_sql(order_payments, "order_payments", engine)
 
@@ -49,9 +52,6 @@ def insert_data_into_db(conn_url:str, db:str, preprocessed_folder:str = "./data/
 
     order_items = pd.read_csv(os.path.join(preprocessed_folder, "order_items.csv"))
     insert_into_sql(order_items, "order_items", engine)
-
-    orders = pd.read_csv(os.path.join(preprocessed_folder, "orders.csv"))
-    insert_into_sql(orders, "orders", engine)
 
     print("Inserting data done!")
 
