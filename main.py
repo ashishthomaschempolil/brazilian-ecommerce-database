@@ -24,10 +24,6 @@ def pipeline(conn_url:str, db:str, raw_folder:str = "./data/raw",preprocessed_fo
     :param str preprocessed_folder: the path to the preprocessed folder, defaults to "./data/preprocessed"
     :return None:
     """
-    #create database
-    #get the number of tables in the database
-    #if the number of tables is 0, insert data into the database
-    #else, print that the database already exists
     create_db.main(conn_url, db)
 
     #preprocess data
