@@ -92,10 +92,10 @@ def append_rows_to_geolocation(
     )
 
     # append the rows to geolocation_df
-    geolocation_df = geolocation_df.append(
-        df.loc[:, ["geolocation_city", "geolocation_state", "city_state"]],
-        ignore_index=True,
-    )
+    geolocation_df = pd.concat([
+        geolocation_df, 
+        df.loc[:, ["geolocation_city", "geolocation_state", "city_state"]]
+    ], ignore_index=True)
 
 
     # drop city_state column
